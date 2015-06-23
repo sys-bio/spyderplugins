@@ -62,9 +62,9 @@ class C2P(QWidget, SpyderPluginMixin):
         """Return widget title"""
         return _("Combine archive to Python importer")
     
-    def get_plugin_icon(self):
-        """Return widget icon"""
-        return get_icon('hello.png')
+#    def get_plugin_icon(self):
+#        """Return widget icon"""
+#        return get_icon('hello.png')
     
     def get_focus_widget(self):
         """
@@ -89,7 +89,7 @@ class C2P(QWidget, SpyderPluginMixin):
                      self.main.editor.load)
         self.connect(self, SIGNAL('redirect_stdio(bool)'),
                      self.main.redirect_internalshell_stdio)
-        self.main.add_dockwidget(self)
+        #self.main.add_dockwidget(self)
         
         c2p_act = create_action(self, _("Import combine archive"),
                                    triggered=self.run_c2p)
@@ -116,10 +116,10 @@ class C2P(QWidget, SpyderPluginMixin):
         """Perform actions before parent main window is closed"""
         return True
             
-    def apply_plugin_settings(self, options):
-        """Apply configuration file's plugin settings"""
-        self.hello_number = self.get_option('hello_number', 1)
-        pass
+#    def apply_plugin_settings(self, options):
+#        """Apply configuration file's plugin settings"""
+#        self.hello_number = self.get_option('hello_number', 1)
+#        pass
         
     def run_c2p(self):
         """Prompt the user to load a combine archive, translate to Python, and display in a new window"""

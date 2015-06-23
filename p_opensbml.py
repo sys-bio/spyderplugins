@@ -1,14 +1,13 @@
-# -*- coding:utf-8 -*-
-#
-# Copyright © 2014 Lucian Smith
-# Based on the 'pylint' plugin, and the spyderlib/plugins/editor core plugin.
-# Licensed under the terms of the MIT License
-# (see spyderlib/__init__.py for details)
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jun 21 17:34:12 2015
 
-"""Import SED-ML to Python Plugin"""
+@author: Kiri Choi
+"""
+"Open SBML Plugin"
 import os, time
 import re
-import spyderplugins.widgets.SedmlToRr as se
+import tellurium as te
 from spyderlib.baseconfig import get_translation
 from spyderlib.config import CONF
 from spyderlib.plugins import SpyderPluginMixin, PluginConfigPage
@@ -20,29 +19,11 @@ from spyderlib.utils import encoding, sourcecode
 from spyderlib.utils.qthelpers import get_icon, create_action, add_actions
 from spyderlib.widgets.sourcecode.codeeditor import CodeEditor
 
-_ = get_translation("p_import_sedml", dirname="spyderplugins")
+_ = get_translation("p_opensbml", dirname="spyderplugins")
 
-#Temp. disabled (Not needed)
-#class S2PConfigPage(PluginConfigPage):
-#    def setup_page(self):
-#        settings_group = QGroupBox(_("Settings"))
-#        save_box = self.create_checkbox(_("Placeholder in case we at some point need a settings page."),
-#                                        'tick_value', default=True)
-#        
-#        settings_layout = QVBoxLayout()
-#        settings_layout.addWidget(save_box)
-#        settings_group.setLayout(settings_layout)
-#
-#        vlayout = QVBoxLayout()
-#        vlayout.addWidget(settings_group)
-#        vlayout.addStretch(1)
-#        self.setLayout(vlayout)
-
-
-class S2P(QWidget, SpyderPluginMixin):
-    """Import a SED-ML file as a python script"""
-    CONF_SECTION = 's2p'
-    #CONFIGWIDGET_CLASS = S2PConfigPage
+class openSBML(QWidget, SpyderPluginMixin):
+    "Open sbml files and translate into antimony string"
+    CONF_SECTION = 'openSBML'
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
         SpyderPluginMixin.__init__(self, parent)
@@ -55,11 +36,7 @@ class S2P(QWidget, SpyderPluginMixin):
     #------ SpyderPluginWidget API --------------------------------------------
     def get_plugin_title(self):
         """Return widget title"""
-        return _("SED-ML to Python importer")
-    
-#    def get_plugin_icon(self):
-#        """Return widget icon"""
-#        return get_icon('hello.png')
+        return _("Open SBML")
     
     def get_focus_widget(self):
         """
@@ -70,7 +47,6 @@ class S2P(QWidget, SpyderPluginMixin):
     
     def get_plugin_actions(self):
         """Return a list of actions related to plugin"""
-        # Font
         return []
 
     def on_first_registration(self):
@@ -86,16 +62,11 @@ class S2P(QWidget, SpyderPluginMixin):
                      self.main.redirect_internalshell_stdio)
         #self.main.add_dockwidget(self)
         
-        s2p_act = create_action(self, _("Import SED-ML file"),
-                                   triggered=self.run_s2p)
-        s2p_act.setEnabled(True)
-        #self.register_shortcut(s2p_act, context="SED-ML to Python",
-        #                       name="Import SED-ML file", default="Alt-I")
+        opensbml = create_action(self, _("Open SBML file"),
+                                   triggered=self.run_opensbml)
+        opensbml.setEnabled(True)
         
-        s2p_actions = (None, s2p_act)
-        import_menu = QMenu(_("Import"))
-        add_actions(import_menu, s2p_actions)
-        self.main.file_menu_actions.insert(8, import_menu)
+        self.main.file_menu_actions.insert(4, opensbml)
         
 
     def refresh_plugin(self):
@@ -106,13 +77,12 @@ class S2P(QWidget, SpyderPluginMixin):
         """Perform actions before parent main window is closed"""
         return True
             
-#    def apply_plugin_settings(self, options):
-#        """Apply configuration file's plugin settings"""
-#        self.hello_number = self.get_option('hello_number', 1)
-#        pass
+    def apply_plugin_settings(self, options):
+        """Apply configuration file's plugin settings"""
+        pass
         
-    def run_s2p(self):
-        """Prompt the user to load a SED-ML file, translate to Python, and display in a new window"""
+    def run_opensbml(self):
+        """Prompt the user to load a SBML file, translate to antimony, and display in a new window"""
         editorwindow = None #Used in editor.load
         processevents=True  #Used in editor.load
         editor = self.main.editor
@@ -124,9 +94,9 @@ class S2P(QWidget, SpyderPluginMixin):
         editor.emit(SIGNAL('redirect_stdio(bool)'), False)
         parent_widget = editor.get_current_editorstack()
         selectedfilter = ''
-        filters = 'SED-ML files (*.sedml *.xml);;All files (*.*)'
+        filters = 'SBML files (*.sbml *.xml);;All files (*.*)'
         filenames, _selfilter = getopenfilenames(parent_widget,
-                                     _("Open SED-ML file"), basedir, filters,
+                                     _("Open SBML file"), basedir, filters,
                                      selectedfilter=selectedfilter)
         editor.emit(SIGNAL('redirect_stdio(bool)'), True)
         if filenames:
@@ -160,10 +130,10 @@ class S2P(QWidget, SpyderPluginMixin):
             filenames = [_convert(fname) for fname in list(filenames)]
         
         for index, filename in enumerate(filenames):
-            p = re.compile( '(.xml$|.sedml$)')
-            pythonfile = p.sub( '_sedml.py', filename)
+            p = re.compile( '(.xml$|.sbml$)')
+            pythonfile = p.sub( '_antimony.py', filename)
             if (pythonfile == filename):
-                pythonfile = filename + "_sedml.py"
+                pythonfile = filename + "_antimony.py"
             current_editor = editor.set_current_filename(pythonfile, editorwindow)
             if current_editor is not None:
                 # -- TODO:  Do not open an already opened file
@@ -193,30 +163,28 @@ class S2P(QWidget, SpyderPluginMixin):
                 current_editor.window().raise_()
             if processevents:
                 QApplication.processEvents()
-        
-    def load_and_translate(self, sedmlfile, pythonfile, editor, set_current=True):
+
+    def load_and_translate(self, sbmlfile, pythonfile, editor, set_current=True):
         """
-        Read filename as SED-ML file, translate it to Python, and
-        create an editor instance and return it
+        Read filename as combine archive, unzip, translate, reconstitute in 
+        Python, and create an editor instance and return it
         *Warning* This is loading file, creating editor but not executing
         the source code analysis -- the analysis must be done by the editor
         plugin (in case multiple editorstack instances are handled)
         """
-        #sedmlfile = to_text_string(sedmlfile)
-        sedmlfile = str(sedmlfile)
+        sbmlfile = str(sbmlfile)
         self.emit(SIGNAL('starting_long_process(QString)'),
-                  _("Loading %s...") % sedmlfile)
-        text, enc = encoding.read(sedmlfile)
-        fname = os.path.basename(sedmlfile)
-        temp =  "# -*- coding: utf-8 -*-\n\n" + '"Generated by Import SED-ML plugin ' + time.strftime("%m/%d/%Y") + '"\n"Extracted from ' + fname + '"\n\n'
-        text = temp + se.sedml_to_python(sedmlfile)
+                  _("Loading %s...") % sbmlfile)
+        text, enc = encoding.read(sbmlfile)
+        sbmlstr = te.readFromFile(sbmlfile)
+        text = "'''" + str(te.sbmlToAntimony(sbmlstr)) + "'''"
         widgeteditor = editor.editorstacks[0]
         finfo = widgeteditor.create_new_editor(pythonfile, enc, text, set_current, new=True)
         index = widgeteditor.data.index(finfo)
         widgeteditor._refresh_outlineexplorer(index, update=True)
         self.emit(SIGNAL('ending_long_process(QString)'), "")
         if widgeteditor.isVisible() and widgeteditor.checkeolchars_enabled \
-           and sourcecode.has_mixed_eol_chars(text):
+         and sourcecode.has_mixed_eol_chars(text):
             name = os.path.basename(pythonfile)
             QMessageBox.warning(self, widgeteditor.title,
                                 _("<b>%s</b> contains mixed end-of-line "
@@ -227,10 +195,10 @@ class S2P(QWidget, SpyderPluginMixin):
         widgeteditor.is_analysis_done = False
         finfo.editor.set_cursor_position('eof')
         finfo.editor.insert_text(os.linesep)
-        return finfo, sedmlfile
-
+        return finfo, sbmlfile
+        
 #==============================================================================
 # The following statements are required to register this 3rd party plugin:
 #==============================================================================
-PLUGIN_CLASS = S2P
+PLUGIN_CLASS = openSBML
 
