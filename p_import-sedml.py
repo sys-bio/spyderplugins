@@ -84,7 +84,7 @@ class S2P(QWidget, SpyderPluginMixin):
                      self.main.editor.load)
         self.connect(self, SIGNAL('redirect_stdio(bool)'),
                      self.main.redirect_internalshell_stdio)
-        #self.main.add_dockwidget(self)
+        self.main.add_dockwidget(self)
         
         s2p_act = create_action(self, _("Import SED-ML file"),
                                    triggered=self.run_s2p)

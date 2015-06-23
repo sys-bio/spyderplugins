@@ -60,7 +60,7 @@ class openSBML(QWidget, SpyderPluginMixin):
                      self.main.editor.load)
         self.connect(self, SIGNAL('redirect_stdio(bool)'),
                      self.main.redirect_internalshell_stdio)
-        #self.main.add_dockwidget(self)
+        self.main.add_dockwidget(self)
         
         opensbml = create_action(self, _("Open SBML file"),
                                    triggered=self.run_opensbml)

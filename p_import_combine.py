@@ -89,7 +89,7 @@ class C2P(QWidget, SpyderPluginMixin):
                      self.main.editor.load)
         self.connect(self, SIGNAL('redirect_stdio(bool)'),
                      self.main.redirect_internalshell_stdio)
-        #self.main.add_dockwidget(self)
+        self.main.add_dockwidget(self)
         
         c2p_act = create_action(self, _("Import combine archive"),
                                    triggered=self.run_c2p)
