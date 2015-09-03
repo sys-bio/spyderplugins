@@ -91,7 +91,7 @@ class C2P(QWidget, SpyderPluginMixin):
                      self.main.redirect_internalshell_stdio)
         self.main.add_dockwidget(self)
         
-        c2p_act = create_action(self, _("Import combine archive"),
+        c2p_act = create_action(self, _("Import COMBINE archive (.omex)"),
                                    triggered=self.run_c2p)
         c2p_act.setEnabled(True)
         #self.register_shortcut(c2p_act, context="Combine to Python",
