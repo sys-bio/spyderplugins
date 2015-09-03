@@ -273,11 +273,11 @@ def Translatecombine(combine):
             print ("Manifest file not found. Import Combine will search for the model file...")
 
     def getbasename(path):
-        e = re.compile('.*[/\\]([^/\\]*\.[^/\\]*)')
+        e = re.compile(r'.*[/\\]([^/\\]*\.[^/\\]*)')
         m = e.match(path)
         if m is None:
             raise RuntimeError('Path not recognized: {}'.format(path))
-        return m.groups[0]
+        return m.groups()[0]
 
     #Creates a string with both SBML and SEDML included
     def translate(combine, filename):
