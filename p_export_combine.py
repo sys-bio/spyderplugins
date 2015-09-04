@@ -85,39 +85,39 @@ import string
 import tempfile, shutil, errno
 from xml.etree import ElementTree
 
-#try:
-import PyQt5
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWizard, QWizardPage, QLabel, QVBoxLayout
-#except ImportError:
-    #pass
+try:
+    import PyQt5
+    from PyQt5 import QtCore, QtGui, QtWidgets
+    from PyQt5.QtCore import pyqtSignal
+    from PyQt5.QtWidgets import QWizard, QWizardPage, QLabel, QVBoxLayout
 
-def createSBMLPage():
-    sbmlpage = QWizardPage()
-    sbmlpage.setTitle('Select SBML file')
+    def createSBMLPage():
+        sbmlpage = QWizardPage()
+        sbmlpage.setTitle('Select SBML file')
 
-    l = QLabel('Please select an SBML file')
+        l = QLabel('Please select an SBML file')
 
-    layout = QVBoxLayout()
-    layout.addWidget(l)
-    sbmlpage.setLayout(layout)
+        layout = QVBoxLayout()
+        layout.addWidget(l)
+        sbmlpage.setLayout(layout)
 
-    return sbmlpage
+        return sbmlpage
 
-def createWizard():
-    w = QWizard()
-    w.addPage(createSBMLPage())
+    def createWizard():
+        w = QWizard()
+        w.addPage(createSBMLPage())
 
-    w.setWindowTitle('COMBINE Export')
-    w.show()
-    return w
+        w.setWindowTitle('COMBINE Export')
+        w.show()
+        return w
 
-import sys
+    import sys
 
-app = QtWidgets.QApplication([])
-w = createWizard()
-sys.exit(app.exec_())
+    app = QtWidgets.QApplication([])
+    w = createWizard()
+    sys.exit(app.exec_())
+except ImportError:
+    pass
 
 try:
     from spyderlib.baseconfig import get_translation
@@ -126,13 +126,35 @@ try:
     from spyderlib.py3compat import getcwd, to_text_string, is_text_string
     from spyderlib.qt.QtCore import SIGNAL
     from spyderlib.qt.QtGui import QVBoxLayout, QGroupBox, QWidget, QApplication, QMessageBox
-    from spyderlib.qt.QtGui import QWizard, QWizardPage
+    from spyderlib.qt.QtGui import QWizard, QWizardPage, QLabel
     from spyderlib.qt.compat import getopenfilenames
     from spyderlib.utils import encoding, sourcecode
     from spyderlib.utils.qthelpers import get_icon, create_action, add_actions
     from spyderlib.widgets.sourcecode.codeeditor import CodeEditor
 
     print('from ExportCombine2')
+
+    def createSBMLPage():
+        sbmlpage = QWizardPage()
+        sbmlpage.setTitle('Select SBML file')
+
+        l = QLabel('Please select an SBML file')
+
+        layout = QVBoxLayout()
+        layout.addWidget(l)
+        sbmlpage.setLayout(layout)
+
+        return sbmlpage
+
+    def createWizard():
+        w = QWizard()
+        w.addPage(createSBMLPage())
+
+        w.setWindowTitle('COMBINE Export')
+        w.show()
+        return w
+
+    print('from ExportCombine2.1')
 
     _ = get_translation("p_export_combine", dirname="spyderplugins")
 
@@ -215,7 +237,7 @@ try:
             return True
 
         def export_combine(self):
-            pass
+            self.w = createWizard()
 
 
     print('from ExportCombine4')
