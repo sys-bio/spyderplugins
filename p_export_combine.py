@@ -89,7 +89,7 @@ try:
     import PyQt5
     from PyQt5 import QtCore, QtGui, QtWidgets
     from PyQt5.QtCore import pyqtSignal
-    from PyQt5.QtWidgets import QWizard, QWizardPage, QLabel, QVBoxLayout
+    from PyQt5.QtWidgets import QWizard, QWizardPage, QLabel, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QLineEdit
 
     def createSBMLPage():
         sbmlpage = QWizardPage()
@@ -99,6 +99,19 @@ try:
 
         layout = QVBoxLayout()
         layout.addWidget(l)
+
+        f = QFrame()
+        flayout = QHBoxLayout()
+
+        browse = QPushButton('Browse...')
+        flayout.addWidget(browse)
+
+        filename = QLineEdit()
+        flayout.addWidget(filename)
+
+        f.setLayout(flayout)
+        layout.addWidget(f)
+        
         sbmlpage.setLayout(layout)
 
         return sbmlpage
@@ -126,7 +139,7 @@ try:
     from spyderlib.py3compat import getcwd, to_text_string, is_text_string
     from spyderlib.qt.QtCore import SIGNAL
     from spyderlib.qt.QtGui import QVBoxLayout, QGroupBox, QWidget, QApplication, QMessageBox
-    from spyderlib.qt.QtGui import QWizard, QWizardPage, QLabel
+    from spyderlib.qt.QtGui import QWizard, QWizardPage, QLabel, QFrame, QHBoxLayout
     from spyderlib.qt.compat import getopenfilenames
     from spyderlib.utils import encoding, sourcecode
     from spyderlib.utils.qthelpers import get_icon, create_action, add_actions
