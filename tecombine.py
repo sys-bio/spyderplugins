@@ -5,6 +5,7 @@ import os.path
 from os.path import exists, isfile, basename
 from zipfile import ZipFile
 import phrasedml
+import antimony
 
 class CombineAsset(object):
     # Get the URI for sbml, sedml, etc.
@@ -41,6 +42,9 @@ class CombineFileAsset(CombineAsset):
     def __init__(self, filename):
         self.filename = filename
 
+    def getbasename(self, f):
+        return basename(f)
+
     def getFileName(self):
         return self.filename
 
@@ -57,6 +61,15 @@ class CombineFileAsset(CombineAsset):
 # Asset types: SBML, SEDML, etc.
 
 class CombineSBMLAsset(CombineAsset):
+    def getResourceURI(self):
+        return CombineAsset.getCOMBINEResourceURI('sbml')
+
+class CombineAntimonyAsset(CombineAsset):
+    def getSBMLStr(self):
+        antimony.clearPreviousLoads()
+        antimony.loadString(self.getRawStr())
+        return antimony.getSBMLString(antimony.getModuleNames()[-1])
+
     def getResourceURI(self):
         return CombineAsset.getCOMBINEResourceURI('sbml')
 
@@ -81,6 +94,29 @@ class CombineSBMLRawAsset(CombineRawAsset, CombineSBMLAsset):
 
 class CombineSBMLFileAsset(CombineFileAsset, CombineSBMLAsset):
     pass
+
+# Antimony:
+
+class CombineAntimonyRawAsset(CombineRawAsset, CombineAntimonyAsset):
+    # return SBML, since COMBINE doesn't support Antimony
+    def getExportedStr(self):
+        return self.getSBMLStr()
+
+class CombineAntimonyFileAsset(CombineFileAsset, CombineAntimonyAsset):
+    # converts a phrasedml extension to a sedml extension
+    def replace_ext(self, filename):
+        r = re.compile(r'.*\.([^.]*)')
+        m = r.match(filename)
+        if m is None:
+            raise RuntimeError('Unrecognized file name: {}'.format(filename))
+        return filename.replace(m.groups()[0], 'xml')
+
+    def getArchName(self):
+        return self.replace_ext(self.getbasename(f))
+
+    # return SEDML, since COMBINE doesn't support PhraSEDML
+    def getExportedStr(self):
+        return self.getSBMLStr()
 
 # SEDML:
 
@@ -155,17 +191,9 @@ class MakeCombine:
             for a in self.assets:
                 self.writeAsset(z, a)
 
-            for f in self.sedmlfiles:
-                z.write(f, self.getbasename(f))
-                manifest += '    <content location="./{}" master="true" format=""/>'.format(
-                    self.getbasename(f))
-
-            for f in self.phrasedmlfiles:
-                sedml = phrasedml.convertString(self.readfile(f))
-                z.writestr(self.replace_pml_ext(self.getbasename(f)), sedml)
-                manifest += '    <content location="./{}" master="true" format="http://identifiers.org/combine.specifications/sed-ml"/>'.format(
-                    self.replace_pml_ext(self.getbasename(f)))
-
             manifest += '</omexManifest>\n'
 
             z.writestr('manifest.xml', manifest)
+
+
+def export(outfile, antimonyStr, phrased)
