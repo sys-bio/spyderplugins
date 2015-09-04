@@ -11,6 +11,7 @@ print('from ExportCombine')
 import os.path
 from os.path import exists, isfile, basename
 from zipfile import ZipFile
+import phrasedml
 
 class MakeCombine:
     def __init__(self):
@@ -37,16 +38,42 @@ class MakeCombine:
         self.checkfile(phrasedmlfile)
         self.phrasedmlfiles.append(phrasedmlfile)
 
+    def readfile(self, f):
+        with open(f) as x: return x.read()
+
+    # converts a phrasedml extension to a sedml extension
+    def replace_pml_ext(self, filename):
+        r = re.compile(r'.*\.([^.]*)')
+        m = r.match(filename)
+        if m is None:
+            raise RuntimeError('Unrecognized file name: {}'.format(filename))
+        return filename.replace(m.groups()[0], 'xml')
+
     def write(self, outfile):
+        manifest = ''
         with ZipFile(outfile, 'w') as z:
+            manifest += '<?xml version="1.0"  encoding="utf-8"?>\n<omexManifest  xmlns="http://identifiers.org/combine.specifications/omex-manifest">\n'
+            manifest += '    <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>'
+
             for f in self.sbmlfiles:
                 z.write(f, self.getbasename(f))
+                manifest += '    <content location="./{}" format="http://identifiers.org/combine.specifications/sbml"/>'.format(
+                    self.getbasename(f))
 
             for f in self.sedmlfiles:
                 z.write(f, self.getbasename(f))
+                manifest += '    <content location="./{}" master="true" format="http://identifiers.org/combine.specifications/sed-ml"/>'.format(
+                    self.getbasename(f))
 
             for f in self.phrasedmlfiles:
-                z.write(f, self.getbasename(f))
+                sedml = phrasedml.convertString(self.readfile(f))
+                z.writestr(self.replace_pml_ext(self.getbasename(f)), sedml)
+                manifest += '    <content location="./{}" master="true" format="http://identifiers.org/combine.specifications/sed-ml"/>'.format(
+                    self.replace_pml_ext(self.getbasename(f)))
+
+            manifest += '</omexManifest>\n'
+
+            z.writestr('manifest.xml', manifest)
 
 print('from ExportCombine1')
 
@@ -114,6 +141,13 @@ try:
             #pass
 
         def register_plugin(self):
+            """Register plugin in Spyder's main window"""
+            self.connect(self, SIGNAL("edit_goto(QString,int,QString)"),
+                        self.main.editor.load)
+            self.connect(self, SIGNAL('redirect_stdio(bool)'),
+                        self.main.redirect_internalshell_stdio)
+            self.main.add_dockwidget(self)
+
             print('Export combine register_plugin ------')
             export_combine_act = create_action(self, _("Export COMBINE archive (.omex)"),
                                     triggered=self.export_combine)
