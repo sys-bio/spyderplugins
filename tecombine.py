@@ -159,17 +159,35 @@ class MakeCombine:
         if not exists(filename) or not isfile(filename):
             raise RuntimeError('No such file: {}'.format(filename))
 
-    def addSBMLFile(self, sbmlfile):
-        self.checkfile(sbmlfile)
-        self.assets.append(CombineFileAsset(sbmlfile))
+    # Add raw strings:
+    def addSBMLStr(self, rawstr, archname):
+        self.assets.append(CombineSBMLRawAsset(rawstr, archname))
 
-    def addSEDMLFile(self, sedmlfile):
-        self.checkfile(sedmlfile)
-        self.assets.append(CombineFileAsset(sedmlfile))
+    def addAntimonyStr(self, rawstr, archname):
+        self.assets.append(CombineAntimonyRawAsset(rawstr, archname))
 
-    def addPhrasedmlFile(self, phrasedmlfile):
-        self.checkfile(phrasedmlfile)
-        self.assets.append(CombinePhraSEDMLFileAsset(phrasedmlfile))
+    def addSEDMLStr(self, rawstr, archname):
+        self.assets.append(CombineSEDMLRawAsset(rawstr, archname))
+
+    def addPhraSEDMLStr(self, rawstr, archname):
+        self.assets.append(CombineSEDMLRawAsset(rawstr, archname))
+
+    # Add files:
+    def addSBMLFile(self, filename):
+        self.checkfile(filename)
+        self.assets.append(CombineSBMLFileAsset(filename))
+
+    def addAntimonyFile(self, filename):
+        self.checkfile(filename)
+        self.assets.append(CombineAntimonyFileAsset(filename))
+
+    def addSEDMLFile(self, filename):
+        self.checkfile(filename)
+        self.assets.append(CombineSEDMLFileAsset(filename))
+
+    def addPhraSEDMLFile(self, filename):
+        self.checkfile(filename)
+        self.assets.append(CombinePhraSEDMLFileAsset(filename))
 
     def writeAsset(self, zipfile, asset):
         if asset.isFile():
@@ -196,4 +214,15 @@ class MakeCombine:
             z.writestr('manifest.xml', manifest)
 
 
-def export(outfile, antimonyStr, phrased)
+def export(outfile, antimonyStr, SBMLName, args*):
+    m = MakeCombine()
+
+    m.addAntimonyStr(antimonyStr, SBMLName)
+
+    # remaining arguments are assumed to be phrasedml
+    n = 1
+    for phrasedml in args:
+        m.addPhraSEDMLStr(phrasedml, 'experiment{}.xml'.format(n))
+        n += 1
+
+    m.write(outfile)
