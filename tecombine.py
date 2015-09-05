@@ -9,7 +9,8 @@ import antimony
 
 class CombineAsset(object):
     # Get the URI for sbml, sedml, etc.
-    def getCOMBINEResourceURI(x):
+    @classmethod
+    def getCOMBINEResourceURI(cls, x):
         types = {
             'sbml': 'http://identifiers.org/combine.specifications/sbml',
             'sed-ml': 'http://identifiers.org/combine.specifications/sed-ml'
@@ -27,12 +28,14 @@ class CombineRawAsset(CombineAsset):
         self.raw = raw
         self.archname = archname
 
+    def isFile(self):
+        return False
+
     def getArchName(self):
         return self.archname
 
     def getRawStr(self):
-        with open(self.getFileName()) as f:
-            return f.read()
+        return self.raw
 
     # return a form suitable for exporting to COMBINE (uses dynamic binding)
     def getExportedStr(self):
@@ -41,6 +44,9 @@ class CombineRawAsset(CombineAsset):
 class CombineFileAsset(CombineAsset):
     def __init__(self, filename):
         self.filename = filename
+
+    def isFile(self):
+        return True
 
     def getbasename(self, f):
         return basename(f)
@@ -151,9 +157,7 @@ class CombinePhraSEDMLFileAsset(CombineFileAsset, CombinePhraSEDMLAsset):
 
 class MakeCombine:
     def __init__(self):
-        self.sbmlfiles = []
-        self.sedmlfiles = []
-        self.phrasedmlfiles = []
+        self.assets = []
 
     def checkfile(self, filename):
         if not exists(filename) or not isfile(filename):
@@ -195,26 +199,26 @@ class MakeCombine:
         else:
             zipfile.writestr(asset.getExportedStr(), asset.getArchName())
 
-        manifest += '    <content location="./{}" master="true" format="{}"/>'.format(
+        self.manifest += '    <content location="./{}" master="true" format="{}"/>'.format(
             asset.getArchName(),
             asset.getResourceURI()
             )
 
     def write(self, outfile):
-        manifest = ''
+        self.manifest = ''
         with ZipFile(outfile, 'w') as z:
-            manifest += '<?xml version="1.0"  encoding="utf-8"?>\n<omexManifest  xmlns="http://identifiers.org/combine.specifications/omex-manifest">\n'
-            manifest += '    <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>'
+            self.manifest += '<?xml version="1.0"  encoding="utf-8"?>\n<omexManifest  xmlns="http://identifiers.org/combine.specifications/omex-manifest">\n'
+            self.manifest += '    <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>'
 
             for a in self.assets:
                 self.writeAsset(z, a)
 
-            manifest += '</omexManifest>\n'
+            self.manifest += '</omexManifest>\n'
 
-            z.writestr('manifest.xml', manifest)
+            z.writestr('manifest.xml', self.manifest)
 
 
-def export(outfile, antimonyStr, SBMLName, args*):
+def export(outfile, antimonyStr, SBMLName, *args):
     m = MakeCombine()
 
     m.addAntimonyStr(antimonyStr, SBMLName)
