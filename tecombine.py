@@ -175,7 +175,7 @@ class MakeCombine:
         self.assets.append(CombineSEDMLRawAsset(rawstr, archname))
 
     def addPhraSEDMLStr(self, rawstr, archname):
-        self.assets.append(CombineSEDMLRawAsset(rawstr, archname))
+        self.assets.append(CombinePhraSEDMLRawAsset(rawstr, archname))
 
     # Add files:
     def addSBMLFile(self, filename):
