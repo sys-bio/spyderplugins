@@ -15,6 +15,7 @@ class CombineAsset(object):
             'sbml': 'http://identifiers.org/combine.specifications/sbml',
             'sed-ml': 'http://identifiers.org/combine.specifications/sed-ml'
         }
+        return types[x]
 
     def isPhraSEDML():
         return False
@@ -197,9 +198,9 @@ class MakeCombine:
         if asset.isFile():
             zipfile.write(asset.getFileName(), asset.getArchName())
         else:
-            zipfile.writestr(asset.getExportedStr(), asset.getArchName())
+            zipfile.writestr(asset.getArchName(), asset.getExportedStr())
 
-        self.manifest += '    <content location="./{}" master="true" format="{}"/>'.format(
+        self.manifest += '    <content location="./{}" master="true" format="{}"/>\n'.format(
             asset.getArchName(),
             asset.getResourceURI()
             )
@@ -208,7 +209,7 @@ class MakeCombine:
         self.manifest = ''
         with ZipFile(outfile, 'w') as z:
             self.manifest += '<?xml version="1.0"  encoding="utf-8"?>\n<omexManifest  xmlns="http://identifiers.org/combine.specifications/omex-manifest">\n'
-            self.manifest += '    <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>'
+            self.manifest += '    <content location="./manifest.xml" format="http://identifiers.org/combine.specifications/omex-manifest"/>\n'
 
             for a in self.assets:
                 self.writeAsset(z, a)
