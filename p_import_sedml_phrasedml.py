@@ -162,9 +162,9 @@ class S2PWP(QWidget, SpyderPluginMixin):
         
         for index, filename in enumerate(filenames):
             p = re.compile( '(.xml$|.sedml$)')
-            pythonfile = p.sub( '_sedml.py', filename)
+            pythonfile = p.sub( '_phrasedml.py', filename)
             if (pythonfile == filename):
-                pythonfile = filename + "_sedml.py"
+                pythonfile = filename + "_phrasedml.py"
             current_editor = editor.set_current_filename(pythonfile, editorwindow)
             if current_editor is not None:
                 # -- TODO:  Do not open an already opened file

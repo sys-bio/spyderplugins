@@ -214,13 +214,13 @@ class C2PWP(QWidget, SpyderPluginMixin):
         text = Translatecombine(combine)
         for i in range(len(text)):
             widgeteditor = editor.editorstacks[0]
-            finfo = widgeteditor.create_new_editor(pythonfile[:-3] + '_' + str(i) + '.py', enc, text[i], set_current, new=True)
+            finfo = widgeteditor.create_new_editor(pythonfile[:-3] + '_' + str(i) + '_phrasedml.py', enc, text[i], set_current, new=True)
             index = widgeteditor.data.index(finfo)
             widgeteditor._refresh_outlineexplorer(index, update=True)
             self.emit(SIGNAL('ending_long_process(QString)'), "")
             if widgeteditor.isVisible() and widgeteditor.checkeolchars_enabled \
              and sourcecode.has_mixed_eol_chars(text[i]):
-                name = os.path.basename(pythonfile[:-3] + '_' + i + '.py')
+                name = os.path.basename(pythonfile[:-3] + '_' + i + '_phrasedml.py')
                 QMessageBox.warning(self, widgeteditor.title,
                                     _("<b>%s</b> contains mixed end-of-line "
                                       "characters.<br>Spyder will fix this "
