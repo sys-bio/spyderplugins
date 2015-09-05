@@ -13,4 +13,4 @@ phrasedmlStr = '''
   plot time vs S1, S2
 '''
 
-comb.export('example.omex', antimonyStr, 'simpleuniuni.xml', phrasedmlStr)
+comb.export('example.zip', antimonyStr, 'simpleuniuni.xml', phrasedmlStr)
