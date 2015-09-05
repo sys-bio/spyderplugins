@@ -5,14 +5,14 @@
 # Licensed under the terms of the MIT License
 # (see spyderlib/__init__.py for details)
 
-"""Import SED-ML to Python Plugin"""
+"""Import SED-ML to PhrasedML Plugin"""
 import os, time
 import re
-import spyderplugins.widgets.SedmlToRr as se
+import phrasedml as pl
 from spyderlib.baseconfig import get_translation
 from spyderlib.config import CONF
 from spyderlib.plugins import SpyderPluginMixin, PluginConfigPage
-from spyderlib.py3compat import getcwd
+from spyderlib.py3compat import getcwd, to_text_string, is_text_string
 from spyderlib.qt.QtCore import SIGNAL
 from spyderlib.qt.QtGui import QVBoxLayout, QGroupBox, QWidget, QApplication, QMessageBox, QMenu
 from spyderlib.qt.compat import getopenfilenames
@@ -20,7 +20,7 @@ from spyderlib.utils import encoding, sourcecode
 from spyderlib.utils.qthelpers import get_icon, create_action, add_actions
 from spyderlib.widgets.sourcecode.codeeditor import CodeEditor
 
-_ = get_translation("p_import_sedml", dirname="spyderplugins")
+_ = get_translation("p_import_sedml_phrasedml", dirname="spyderplugins")
 
 #Temp. disabled (Not needed)
 #class S2PConfigPage(PluginConfigPage):
@@ -39,9 +39,9 @@ _ = get_translation("p_import_sedml", dirname="spyderplugins")
 #        self.setLayout(vlayout)
 
 
-class S2P(QWidget, SpyderPluginMixin):
-    """Import a SED-ML file as a python script"""
-    CONF_SECTION = 's2p'
+class S2PWP(QWidget, SpyderPluginMixin):
+    """Import a SED-ML file as a PhrasedML string"""
+    CONF_SECTION = 's2pwp'
     #CONFIGWIDGET_CLASS = S2PConfigPage
     def __init__(self, parent=None):
         QWidget.__init__(self, parent=parent)
@@ -55,11 +55,7 @@ class S2P(QWidget, SpyderPluginMixin):
     #------ SpyderPluginWidget API --------------------------------------------
     def get_plugin_title(self):
         """Return widget title"""
-        return _("SED-ML to Python importer")
-    
-#    def get_plugin_icon(self):
-#        """Return widget icon"""
-#        return get_icon('hello.png')
+        return _("import SED-ML with PhrasedML")
     
     def get_focus_widget(self):
         """
@@ -86,16 +82,22 @@ class S2P(QWidget, SpyderPluginMixin):
                      self.main.redirect_internalshell_stdio)
         self.main.add_dockwidget(self)
         
-        s2p_act = create_action(self, _("Import SED-ML file"),
-                                   triggered=self.run_s2p)
-        s2p_act.setEnabled(True)
+        s2pwp_act = create_action(self, _("Import SED-ML with PhrasedML"),
+                                   triggered=self.run_s2pwp)
+        s2pwp_act.setEnabled(True)
         #self.register_shortcut(s2p_act, context="SED-ML to Python",
         #                       name="Import SED-ML file", default="Alt-I")
         
-        s2p_actions = (None, s2p_act)
-        import_menu = QMenu(_("Import"))
-        add_actions(import_menu, s2p_actions)
-        self.main.file_menu_actions.insert(8, import_menu)
+        for item in self.main.file_menu_actions:
+            try:
+                menu_title = item.title()
+            except AttributeError:
+                pass
+            else:
+                if not is_text_string(menu_title): # string is a QString
+                    menu_title = to_text_string(menu_title.toUtf8)
+                if item.title() == str("Import"):
+                    item.addAction(s2pwp_act)        
         
 
     def refresh_plugin(self):
@@ -106,13 +108,12 @@ class S2P(QWidget, SpyderPluginMixin):
         """Perform actions before parent main window is closed"""
         return True
             
-#    def apply_plugin_settings(self, options):
-#        """Apply configuration file's plugin settings"""
-#        self.hello_number = self.get_option('hello_number', 1)
-#        pass
+    def apply_plugin_settings(self, options):
+        """Apply configuration file's plugin settings"""
+        pass
         
-    def run_s2p(self):
-        """Prompt the user to load a SED-ML file, translate to Python, and display in a new window"""
+    def run_s2pwp(self):
+        """Prompt the user to load a SED-ML file, translate to PhrasedML, and display in a new window"""
         editorwindow = None #Used in editor.load
         processevents=True  #Used in editor.load
         editor = self.main.editor
@@ -196,7 +197,7 @@ class S2P(QWidget, SpyderPluginMixin):
         
     def load_and_translate(self, sedmlfile, pythonfile, editor, set_current=True):
         """
-        Read filename as SED-ML file, translate it to Python, and
+        Read filename as SED-ML file, translate it to PhrasedML, and
         create an editor instance and return it
         *Warning* This is loading file, creating editor but not executing
         the source code analysis -- the analysis must be done by the editor
@@ -208,8 +209,8 @@ class S2P(QWidget, SpyderPluginMixin):
                   _("Loading %s...") % sedmlfile)
         text, enc = encoding.read(sedmlfile)
         fname = os.path.basename(sedmlfile)
-        temp =  "# -*- coding: utf-8 -*-\n\n" + '"Generated by Import SED-ML plugin ' + time.strftime("%m/%d/%Y") + '"\n"Extracted from ' + fname + '"\n\n'
-        text = temp + se.sedml_to_python(sedmlfile)
+        temp =  '# -*- coding: utf-8 -*-\n\n' + "'Generated by Import SED-ML with PhrasedML plugin " + time.strftime('%m/%d/%Y') + "'\n'Extracted from " + fname + "'\n\n'''"
+        text = temp + pl.convertFile(sedmlfile) + "'''"
         widgeteditor = editor.editorstacks[0]
         finfo = widgeteditor.create_new_editor(pythonfile, enc, text, set_current, new=True)
         index = widgeteditor.data.index(finfo)
@@ -232,5 +233,5 @@ class S2P(QWidget, SpyderPluginMixin):
 #==============================================================================
 # The following statements are required to register this 3rd party plugin:
 #==============================================================================
-PLUGIN_CLASS = S2P
+PLUGIN_CLASS = S2PWP
 
