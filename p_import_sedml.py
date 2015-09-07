@@ -55,7 +55,7 @@ class S2P(QWidget, SpyderPluginMixin):
     #------ SpyderPluginWidget API --------------------------------------------
     def get_plugin_title(self):
         """Return widget title"""
-        return _("Import SED-ML")
+        return _("Import SED-ML as Python")
     
     def get_focus_widget(self):
         """
@@ -82,7 +82,7 @@ class S2P(QWidget, SpyderPluginMixin):
                      self.main.redirect_internalshell_stdio)
         self.main.add_dockwidget(self)
         
-        s2p_act = create_action(self, _("Import SED-ML"),
+        s2p_act = create_action(self, _("Import SED-ML as Python"),
                                    triggered=self.run_s2p)
         s2p_act.setEnabled(True)
         #self.register_shortcut(s2p_act, context="SED-ML to Python",

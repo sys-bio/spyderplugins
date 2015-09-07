@@ -60,7 +60,7 @@ class C2PWP(QWidget, SpyderPluginMixin):
     #------ SpyderPluginWidget API --------------------------------------------
     def get_plugin_title(self):
         """Return widget title"""
-        return _("Import COMBINE with PhrasedML")
+        return _("Import COMBINE as PhrasedML")
     
     def get_focus_widget(self):
         """
@@ -87,7 +87,7 @@ class C2PWP(QWidget, SpyderPluginMixin):
                      self.main.redirect_internalshell_stdio)
         self.main.add_dockwidget(self)
         
-        c2pwp_act = create_action(self, _("Import COMBINE with PhrasedML"),
+        c2pwp_act = create_action(self, _("Import COMBINE as PhrasedML"),
                                    triggered=self.run_c2pwp)
         c2pwp_act.setEnabled(True)
         #self.register_shortcut(c2p_act, context="Combine to Python",
@@ -212,15 +212,17 @@ class C2PWP(QWidget, SpyderPluginMixin):
                   _("Loading %s...") % combine)
         text, enc = encoding.read(combine)
         text = Translatecombine(combine)
+        zipextloctemp, sbmlloclisttemp, sedmlloclisttemp = manifestsearch(combine)
         for i in range(len(text)):
             widgeteditor = editor.editorstacks[0]
-            finfo = widgeteditor.create_new_editor(pythonfile[:-3] + '_' + str(i) + '_phrasedml.py', enc, text[i], set_current, new=True)
+            sedmlfname = os.path.basename(sedmlloclisttemp[i])
+            finfo = widgeteditor.create_new_editor(os.path.splitext(sedmlfname)[0] + '_phrasedml.py', enc, text[i], set_current, new=True)
             index = widgeteditor.data.index(finfo)
             widgeteditor._refresh_outlineexplorer(index, update=True)
             self.emit(SIGNAL('ending_long_process(QString)'), "")
             if widgeteditor.isVisible() and widgeteditor.checkeolchars_enabled \
              and sourcecode.has_mixed_eol_chars(text[i]):
-                name = os.path.basename(pythonfile[:-3] + '_' + i + '_phrasedml.py')
+                name = os.path.basename(pythonfile[:-3] + '_phrasedml.py')
                 QMessageBox.warning(self, widgeteditor.title,
                                     _("<b>%s</b> contains mixed end-of-line "
                                       "characters.<br>Spyder will fix this "
@@ -232,45 +234,45 @@ class C2PWP(QWidget, SpyderPluginMixin):
             finfo.editor.insert_text(os.linesep)
         return finfo, combine
 
+#Extracts combine archive to a temporary directory
+def zipext(combine):
+    tarzip = zipfile.ZipFile(combine)
+    extloc = tempfile.mkdtemp()
+    tarzip.extractall(extloc)
+    tarzip.close()
+    return extloc
+    
+#Searches the manifest to acquire correct sbml and sedml file location
+def manifestsearch(combine):
+    __manifest = True
+    sbmlloclist = []
+    sedmlloclist = []
+    zipextloc = zipext(combine)
+    manifestloc = os.path.join(zipextloc, 'manifest.xml')
+    try:
+        manifest = ElementTree.parse(manifestloc)
+    except IOError:
+        __manifest = False
+    if __manifest == True:
+        root = manifest.getroot()
+        for child in root:
+            attribute = child.attrib
+            formtype = attribute.get('format')
+            loc = attribute.get('location')
+            if formtype == "http://identifiers.org/combine.specifications/sbml":
+                sbmlloc = loc
+                sbmlloc = sbmlloc[1:]
+                sbmlloclist.append(sbmlloc)
+            elif formtype == "http://identifiers.org/combine.specifications/sed-ml":
+                sedmlloc = loc
+                sedmlloc = sedmlloc[1:]
+                sedmlloclist.append(sedmlloc)
+        return (zipextloc, sbmlloclist, sedmlloclist)
+    else:
+        print ("Manifest file not found. Import Combine will search for the model file...")
+
 #Customized from Ipythonify
 def Translatecombine(combine):
-    
-    #Extracts combine archive to a temporary directory
-    def zipext(combine):
-        tarzip = zipfile.ZipFile(combine)
-        extloc = tempfile.mkdtemp()
-        tarzip.extractall(extloc)
-        tarzip.close()
-        return extloc
-    
-    #Searches the manifest to acquire correct sbml and sedml file location
-    def manifestsearch(combine):
-        __manifest = True
-        sbmlloclist = []
-        sedmlloclist = []
-        zipextloc = zipext(combine)
-        manifestloc = os.path.join(zipextloc, 'manifest.xml')
-        try:
-            manifest = ElementTree.parse(manifestloc)
-        except IOError:
-            __manifest = False
-        if __manifest == True:
-            root = manifest.getroot()
-            for child in root:
-                attribute = child.attrib
-                formtype = attribute.get('format')
-                loc = attribute.get('location')
-                if formtype == "http://identifiers.org/combine.specifications/sbml":
-                    sbmlloc = loc
-                    sbmlloc = sbmlloc[1:]
-                    sbmlloclist.append(sbmlloc)
-                elif formtype == "http://identifiers.org/combine.specifications/sed-ml":
-                    sedmlloc = loc
-                    sedmlloc = sedmlloc[1:]
-                    sedmlloclist.append(sedmlloc)
-            return (zipextloc, sbmlloclist, sedmlloclist)
-        else:
-            print ("Manifest file not found. Import Combine will search for the model file...")
 
     def getbasename(path):
         e = re.compile(r'.*[/\\]([^/\\]*\.[^/\\]*)')
