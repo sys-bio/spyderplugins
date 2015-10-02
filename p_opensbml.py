@@ -177,7 +177,7 @@ class openSBML(QWidget, SpyderPluginMixin):
                   _("Loading %s...") % sbmlfile)
         text, enc = encoding.read(sbmlfile)
         sbmlstr = te.readFromFile(sbmlfile)
-        text = "'''" + str(te.sbmlToAntimony(sbmlstr)) + "'''"
+        text = "import tellurium as te\n\nr = te.loada('''\n" + str(te.sbmlToAntimony(sbmlstr)) + "''')"
         widgeteditor = editor.editorstacks[0]
         finfo = widgeteditor.create_new_editor(pythonfile, enc, text, set_current, new=True)
         index = widgeteditor.data.index(finfo)
