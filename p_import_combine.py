@@ -9,7 +9,6 @@
 import os, time
 import re
 import zipfile
-import spyderplugins.widgets.SedmlToRr as se
 import tellurium as te
 import string
 import tempfile, shutil, errno
@@ -300,7 +299,7 @@ def Translatecombine(combine):
             sbml = te.readFromFile(zipextloc + sbmlloclist[i])
             sbmlstrlist.append(te.sbmlToAntimony(sbml))
         for j in range(len(sedmlloclist)):
-            sedmlstr = se.sedml_to_python(zipextloc + sedmlloclist[j])
+            sedmlstr = te.SedmlToRr.sedml_to_python(zipextloc + sedmlloclist[j])
             lines = sedmlstr.splitlines()
             for i,s in enumerate(lines):
                 reSearchPath = re.split(rePath, s)
