@@ -299,7 +299,7 @@ def Translatecombine(combine):
             sbml = te.readFromFile(zipextloc + sbmlloclist[i])
             sbmlstrlist.append(te.sbmlToAntimony(sbml))
         for j in range(len(sedmlloclist)):
-            sedmlstr = te.SedmlToRr.sedml_to_python(zipextloc + sedmlloclist[j])
+            sedmlstr = te.tesedml.sedmlToPython(zipextloc + sedmlloclist[j])
             lines = sedmlstr.splitlines()
             for i,s in enumerate(lines):
                 reSearchPath = re.split(rePath, s)
