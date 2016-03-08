@@ -299,7 +299,7 @@ def Translatecombine(combine):
         
         for k in range(len(sedmlstrlist)):
             outputstrlist.append(outputstr + "AntimonyModel = '''\n" + sbmlstrlist[0] + "'''\n\nPhrasedMLstr = '''\n" + sedmlstrlist[k] + 
-            "'''\n\nimport tellurium as te\n\nexp = te.experiment(AntimonyModel, PhrasedMLstr)\nexp.execute()")
+            "'''\n\nimport tellurium as te\n\nexp = te.experiment([AntimonyModel], [PhrasedMLstr])\nexp.execute(PhrasedMLstr)")
         
         delseq(zipextloc)
         return outputstrlist
