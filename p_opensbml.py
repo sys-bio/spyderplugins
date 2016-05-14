@@ -4,7 +4,7 @@ Created on Sun Jun 21 17:34:12 2015
 
 @author: Kiri Choi
 """
-"Open SBML Plugin"
+from __future__ import print_function, division
 import os, time
 import re
 import tellurium as te

@@ -6,6 +6,7 @@
 # (see spyderlib/__init__.py for details)
 
 """Import SED-ML to PhrasedML Plugin"""
+from __future__ import print_function, division
 import os, time
 import re
 import phrasedml as pl

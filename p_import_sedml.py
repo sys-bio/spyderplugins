@@ -6,6 +6,7 @@
 # (see spyderlib/__init__.py for details)
 
 """Import SED-ML to Python Plugin"""
+from __future__ import print_function, division
 import os, time
 import re
 import tellurium as te
